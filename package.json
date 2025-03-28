@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "markdown-it-mathjax3": "^4.3.2",
+    "sass-embedded": "^1.86.0",
+    "vitepress": "^1.6.3"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  }
+}
