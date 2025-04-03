@@ -43,7 +43,7 @@ AutoLang 想要成为 C++ 的 TypeScript，它会与 C++ 共存，并允许高�
   - 统一的异常类型
   - 不抛出的动态内存分配和特殊函数
 - [值类别](value-category)
-- [所有权转移](move)
+- [所有权转移](moves)
   - 取用语义
   - 移动语义
 - [类型推导](type-deduction)
@@ -52,7 +52,7 @@ AutoLang 想要成为 C++ 的 TypeScript，它会与 C++ 共存，并允许高�
   - 非瞬态编译期分配
 - [模块](modules)
 - [静态反射](reflect)
-- [契约](contract)
+- [契约](contracts)
   - 前后条件、断言
   - 不变式
   - 加固标准库
@@ -72,17 +72,20 @@ AutoLang 想要成为 C++ 的 TypeScript，它会与 C++ 共存，并允许高�
   - `scope_exit` `scope_fail` `scope_success` 块
   - `synchronized` 块
   - 原子块
-- [类型特征](traits)
-- [非侵入式多态](proxy)
-- [值语义多态](value-semantic-polymorphism)
+- [泛型约束](constraints)
+  - 概念
+  - 类型特征
+- [多态](polymorphism)
+  - 值语义多态
+  - 指针语义多态
+    - 非侵入式多态
+    - 侵入式多态
 - [Tagged Unions](tagged-unions)
 - [模式匹配](pattern-matching)
-  - 顺序匹配和无序匹配
-  - 基于模式匹配的重载决议和模板
-  - 重载决议消歧义
 - [名字耦合](name-coupling)
   - 弱化实参依赖查找
   - 类型特征
+  - UFCS
 - [零大小类型](zero-sized-types)
 - [兼容 C++](cpp)
 
