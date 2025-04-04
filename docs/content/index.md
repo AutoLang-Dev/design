@@ -42,6 +42,9 @@ AutoLang 想要成为 C++ 的 TypeScript，它会与 C++ 共存，并允许高�
   - 零开销异常
   - 统一的异常类型
   - 不抛出的动态内存分配和特殊函数
+- [函数](functions)
+  - UFCS
+  - 分离式成员函数
 - [值类别](value-category)
 - [所有权转移](moves)
   - 取用语义
