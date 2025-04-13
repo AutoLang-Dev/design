@@ -72,8 +72,8 @@ AutoLang 想要成为 C++ 的 TypeScript，它会与 C++ 共存，并允许高�
 - [语句表达式](statement-expressions)
 - [语句块](statement-blocks)
   - `main` 块
-  - `scope_exit` `scope_fail` `scope_success` 块
-  - `synchronized` 块
+  - 作用域防护块
+  - 同步块
   - 原子块
 - [泛型约束](constraints)
   - 概念
