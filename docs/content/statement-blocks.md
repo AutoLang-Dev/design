@@ -27,9 +27,7 @@ main {
 
 作用域防护块一共有三种： `scope_exit` `scope_fail` `scope_success` 。使用方式如下：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 test: (name, flag: Bool) throw Int = {
     scope_exit {
         println("{}: scope_exit", name);
@@ -53,32 +51,6 @@ main {
 }
 ```
 
-```autolang [上古 AutoLang]
-auto test(name, flag: Bool) throw(Int) {
-    scope_exit {
-        println("{}: scope_exit", name);
-    }
-    scope_fail {
-        println("{}: scope_fail", name);
-    }
-    scope_success {
-        println("{}: scope_success", name);
-    }
-    if flag {
-        throw 0;
-    }
-}
-
-main {
-    try {
-        test("return", false);
-        test("throw", true);
-    };
-}
-```
-
-:::
-
 可能的输出：
 
 ```plaintext
@@ -96,9 +68,7 @@ throw: scope_exit
 
 同步块（和下一节的原子块）来源于 C++ 的 [事务性内存 (TM TS)](https://zh.cppreference.com/w/cpp/language/transactional_memory)：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () = {
     synchronized {
         一系列语句
@@ -109,24 +79,9 @@ f: () = {
 }
 ```
 
-```autolang [上古 AutoLang]
-auto f() {
-    synchronized {
-        一系列语句
-        synchronized {
-            另一系列语句
-        }
-    }
-}
-```
-
-:::
-
 如同：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () = {
     {
         static __sync_mutex := std::Mutex();
@@ -142,25 +97,6 @@ f: () = {
     }
 }
 ```
-
-```autolang [上古 AutoLang]
-auto f() {
-    {
-        static auto __sync_mutex = std::Mutex{};
-        __sync_mutex.lock();
-        scope_exit {
-            __sync_mutex.unlock();
-        }
-
-        一系列语句
-        {
-            另一系列语句
-        }
-    }
-}
-```
-
-:::
 
 > 如同在一个全局锁下执行复合语句：程序中的所有最外层同步块都以一个单独的全序执行。在该顺序中，每个同步块的结尾同步于（synchronize with）下个同步块的开始。内嵌于其他同步块的同步块没有特殊语义。
 >

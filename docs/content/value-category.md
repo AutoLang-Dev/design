@@ -112,9 +112,7 @@ AutoLang 的非破坏性移动被称作“取用”，使用关键词 `take` 表
 
 非破坏性移动只是改变了对象的状态，仍然处于存活且不违反不变式（如果有）的状态。但我们设想这种情况：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 T: type = {
     x: T1,
     y: T2,
@@ -124,25 +122,11 @@ t := T();
 x := move t.x;
 ```
 
-```autolang [上古 AutoLang]
-struct T {
-    x: T1;
-    y: T2;
-} // 假设存在不变式
-
-auto t = T{};
-auto x = move t.x;
-```
-
-:::
-
 这时候虽然 t.y 能用，但是，如果 T 的不变式包含“成员 `x` 存活”，则违反了不变式。但如果只是非破坏性移动，则至少不会令其不存活。
 
 更致命的是，想到这个的时候我突然发现，即使不引入不变式，也可能造成危险：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 T: type = {
     x: T1,
     y: T2,
@@ -157,23 +141,6 @@ x = move t.x;
 f(t); // boom!
 ```
 
-```autolang [上古 AutoLang]
-struct T {
-    x: T1;
-    y: T2;
-} // 假设没有不变式
-
-auto f(t: &T) {
-    // 无论其内容，即便是空函数
-}
-
-auto t = T{};
-auto x = move t.x;
-f(t); // boom!
-```
-
-:::
-
 上面这段代码的 `T` 明确了没有不变式，但函数 `f` 的入参 `&T` 却隐含了前条件：完整存活的对象。显然形式上第 12 行违反了前条件。
 
 所以我正在设计一套方案，可能会是下面其一：
@@ -184,22 +151,11 @@ f(t); // boom!
 
 静态分析能够比较容易地防止使用已经移动的对象，但没有所有权和借用检查这一整套基本语义作为支撑的前提下，移动导致已有的引用或指针悬垂是难以通过静态分析得知的：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 x := 1;
 y := &x;
 z := move x;
 // 此时 y 悬垂
 ```
-
-```autolang [上古 AutoLang]
-auto x = 1;
-auto y = &x;
-auto z = move x;
-// 此时 y 悬垂
-```
-
-:::
 
 我保留非破坏性移动作为其中一个缓冲带，但还有一个计划是设计一套动态分析系统，这可能会在[契约](contracts)相关部分提到。

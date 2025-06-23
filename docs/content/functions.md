@@ -2,39 +2,19 @@
 
 AutoLang 的函数语法和 Cpp2 很像：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: (x1: T1, x2: T2, /*...*/) -> RT = {
     // ...
 }
 ```
 
-```autolang [上古 AutoLang]
-auto f(x1: T1, x2: T2, /*...*/) -> RT {
-    // ...
-}
-```
-
-:::
-
 直接省略掉类型说明符则如同函数模板简写：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: (x, y, /*...*/) -> RT = {
     // ...
 }
 ```
-
-```autolang [上古 AutoLang]
-auto f(x, y, /*...*/) -> RT {
-    // ...
-}
-```
-
-:::
 
 函数体是一对花括号括起来的 0 个或多个语句，外加一个可选的表达式作为返回值（类似于 Rust）：
 
@@ -86,9 +66,7 @@ relu: <T> (x) = std::max(T(), x);
 
 UFCS 是 Uniform Function Call Syntax 的缩写，大约可以这样理解：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: (x: T) -> RT = {
     // ...
 }
@@ -96,17 +74,6 @@ f: (x: T) -> RT = {
 x := T();
 x.f(); // 等价于 f(x);
 ```
-
-```autolang [上古 AutoLang]
-auto f(x: T) -> RT {
-    // ...
-}
-
-auto x = T{};
-x.f(); // 等价于 f(x);
-```
-
-:::
 
 也就是说，通过 `.` 在对象上调用函数的时候，会先查找其成员函数。如果没有相匹配的，再查找非成员函数，并将该对象提至第一参数。都查不到则程序非良构。
 
@@ -147,9 +114,7 @@ impl Circle {
 
 分离式成员函数的语法类似于 C# 的扩展方法（并非抄，实在是巧合）：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 Vec2: type = {
     x: Int,
     y: Int,
@@ -165,26 +130,6 @@ test1: () = {
 }
 ```
 
-```autolang [上古 AutoLang]
-struct Vec2 {
-    x: Int;
-    y: Int;
-}
-
-auto norm(this me: Vec2) {
-    me.x * me.x + me.y * me.y
-}
-
-auto test1() {
-    auto vec = Vec2{1, 2};
-    auto n = vec.norm();
-    std::println("|{}| ^ 2 = {}", vec, n);
-    // 可能的输出：|(1, 2)| ^ 2 = 5
-}
-```
-
-:::
-
 可以接受的写法是：
 
 - `vec.norm()`
@@ -197,33 +142,16 @@ auto test1() {
 
 同一处写多个成员函数的话就比较麻烦，每个都要指定 `this` 和 `: Vec2` ，所以我提供了多个成员函数绑定成一组的写法，类似 Rust 的 `impl` 语法：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 implement Vec2 {
     get_x: (me) = me.x;
     get_y: (me) = me.y;
 }
 ```
 
-```autolang [上古 AutoLang]
-embody Vec2 {
-    auto get_x(me) {
-        me.x
-    }
-    auto get_y(me) {
-        me.y
-    }
-}
-```
-
-:::
-
 假设有一个类型特征（类似 Rust 的 `trait` ） `Formattable` 需要你为 `Vec2` 实现，类似于 Rust 的 `impl` `for`语法，在 AutoLang 中如下：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 implement Vec2 is Formattable {
     format: (me) = std::format("{}", me);
 } // 只是一个例子，真正的格式化是 std::Formatter 来做
@@ -236,24 +164,6 @@ test2: () = {
     // 可能的输出：(1, 2)
 }
 ```
-
-```autolang [上古 AutoLang]
-embody Vec2 is Formattable {
-    auto format(me) {
-        std::format("{}", me)
-    }
-} // 只是一个例子，真正的格式化是 std::Formatter 来做
-
-auto test2() {
-    static_assert(Vec2 is Formattable);
-    auto vec = Vec2{1, 2};
-    auto str = vec.Formattable::format();
-    std::println("{}", str);
-    // 可能的输出：(1, 2)
-}
-```
-
-:::
 
 还有内嵌 `is Trait` 块：
 
@@ -290,9 +200,7 @@ OneInt: type {
 
 有了 UFCS， `ranges` 用起来就很方便了：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 x := views::iota(0uz, 5uz)
     .views::reverse()
     .views::transform(:(x) = x * 2)
@@ -301,22 +209,9 @@ std::println("{}", x);
 // 可能的输出：[8, 6, 4, 2, 0]
 ```
 
-```autolang [上古 AutoLang]
-auto x = views::iota(0uz, 5uz)
-        .views::reverse()
-        .views::transform([](x){ x * 2 })
-        .ranges::to<std::Array>();
-std::println("{}", x);
-// 可能的输出：[8, 6, 4, 2, 0]
-```
-
-:::
-
 名字耦合也得到了优化，更加精准了：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 OneInt: type = {
     v: Int;
 }
@@ -341,31 +236,3 @@ test3: () = {
     assert(*x.Range::begin() == 1);
 }
 ```
-
-```autolang [上古 AutoLang]
-struct OneInt {
-    v: Int;
-}
-
-auto begin(this me: OneInt) {
-    std::println("begin with {}", me.v);
-}
-
-embody OneInt is std::Range {
-    auto begin(&me) -> *Int {
-        me.v.std::address()
-    }
-    auto end(&me) -> *Int {
-        me.begin() // 是 Range::begin 因为 OneInt::begin 被遮蔽
-          .std::next()
-    }
-}
-
-auto test3() {
-    auto x = OneInt{1};
-    x.begin();
-    assert(*x.Range::begin() == 1);
-}
-```
-
-:::

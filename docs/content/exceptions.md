@@ -22,9 +22,7 @@ Zig 和 Swift 也有 `try` 关键词用于传播错误，不再额外展示代�
 
 AutoLang 中，异常对象的自动传播是隐式的，而不需要额外的符号。这符合 AutoLang 的“推荐的范式写起来简单”的设计思路。
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () throw(E) = {
     // ...
 }
@@ -34,23 +32,9 @@ g: () throw(E) = {
 }
 ```
 
-```autolang [上古 AutoLang]
-auto f() throw(E) {
-    // ...
-}
-
-auto g() throw(E) {
-    f(); // 如果抛出异常则自动传播
-}
-```
-
-:::
-
 有时候我们不想自动传播，也不需要控制流分离，则我们可以用 `try` 表达式拦截错误，并产生 `std::Excepted<T, E>` 类型的对象。
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () throw(E) -> T = {
     // ...
 }
@@ -64,23 +48,6 @@ g: () = { // 没有 throw 染色
     }
 }
 ```
-
-```autolang [上古 AutoLang]
-auto f() throw(E) -> T {
-    // ...
-}
-
-auto g() { // 没有 throw 染色
-    auto x = try f(); // x 是 std::Excepted<T, E> 类型
-    if (x) {
-        std::println("success");
-    } else {
-        std::println("error");
-    }
-}
-```
-
-:::
 
 ## 控制流分离
 
@@ -112,9 +79,7 @@ auto g()
 
 完全的控制流分离应该是下面的熟悉模样：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () throw E = {
     if /*成功*/ {
         T(/*...*/)
@@ -132,33 +97,11 @@ g: () = { // 没有 throw 染色，因为 catch 了所有异常
 }
 ```
 
-```autolang [上古 AutoLang]
-auto f() throw(E) {
-    if (/*成功*/) {
-        T{/*...*/}
-    } else {
-        throw E{/*...*/};
-    }
-}
-
-auto g() { // 没有 throw 染色，因为 catch 了所有异常
-    try {
-        std::println("success: {}", f());
-    } catch (e) {
-        std::println("error: {}", e);
-    }
-}
-```
-
-:::
-
 ## 与 ADT 同构的异常
 
 上面的那段代码如同下面的这段代码：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () -> std::Excepted<T, E> = {
     if /*成功*/ {
         T(/*...*/)
@@ -177,26 +120,6 @@ g: () = {
 }
 ```
 
-```autolang [上古 AutoLang]
-auto f() -> std::Excepted<T, E> {
-    if (/*成功*/) {
-        T{/*...*/}
-    } else {
-        std::Excepted<T, E>::unexcepted(E{/*...*/})
-    }
-}
-
-auto g() {
-    if (auto ret = f(); ret) {
-        std::println("success: {}", ret.value());
-    } else {
-        std::println("error: {}", ret.error());
-    }
-}
-```
-
-:::
-
 换言之，AutoLang 的异常传播不是基于栈展开，而是用与 `return` 类似的手段，其开销也和 `return` 相同，这点与 Swift 类似。同样的，适用于 `return` 的优化（如 NRVO）和性质也平等地适用于 `throw` 。
 
 更详细的实践可以参考 [[Duffy 2016] The Error Model](https://joeduffyblog.com/2016/02/07/the-error-model/)
@@ -205,9 +128,7 @@ auto g() {
 
 C++ 提供了很多接口用于动态地获取异常，但我认为没什么用，徒增复杂性，所以获取异常对象仅能通过 `catch` 子句：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () = {
     try {
         throw /*...*/;
@@ -217,25 +138,11 @@ f: () = {
 }
 ```
 
-```autolang [上古 AutoLang]
-auto f() {
-    try {
-        throw /*...*/;
-    } catch (e) {
-        // ...
-    }
-}
-```
-
-:::
-
 可以在 `catch` 子句内对异常对象做模式匹配，但后续大概会给 `catch` 加上更方便的模式匹配语法糖。
 
 也可以省略括号以忽略异常对象：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () = {
     try {
         throw /*...*/;
@@ -245,23 +152,9 @@ f: () = {
 }
 ```
 
-```autolang [上古 AutoLang]
-auto f() {
-    try {
-        throw /*...*/;
-    } catch {
-        // ...
-    }
-}
-```
-
-:::
-
 或者，我们能够知道一个类型上会抛出的表达式实际上不会抛出异常，则可以用 `try!` 表达式强制忽略：
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () throw = {
     // ...
 }
@@ -271,18 +164,6 @@ g: () = {
 }
 ```
 
-```autolang [上古 AutoLang]
-auto f() throw {
-    // ...
-}
-
-auto g() {
-    try! f();
-}
-```
-
-:::
-
 但是如果实际上抛出了异常，则意味着违反了“实际不会抛出”的[契约](contract)，从而引发 Fast Fail 或未定义行为（具体请参考契约相关设计）。
 
 ## 静态异常
@@ -291,21 +172,11 @@ C++ 异常的一个缺陷就是过于动态化，并且无法回退到静态异�
 
 ### 静态异常说明
 
-::: code-group
-
-```autolang [中古 AutoLang]
+```autolang
 f: () throw E = {
     // ...
 }
 ```
-
-```autolang [上古 AutoLang]
-auto f() throw(E) {
-    // ...
-}
-```
-
-:::
 
 上面的代码中的 `throw E` 就是异常说明。有了异常说明，函数才允许抛出异常，或者令其他函数的异常自动向外传播，否则它需要拦截所有的异常。它与 C++ 的 ~~（已弃用的）~~ 动态异常说明不同，它是静态的，并且只接受一种类型。
 
@@ -317,21 +188,11 @@ auto f() throw(E) {
 
 抛出多种类型的异常既会降低运行效率和导致代码膨胀，也会增加心智负担，因为很多时候我们不关心到底是什么类型，甚至不需要 Payload。但我们需要把异常信息传递下去，所以我们需要一个统一的错误类型。相关设计来源于 [Herbception](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0709r4.pdf)，目前还有很多细节需要完善。
 
-::: code-group
-
-```autolang{1} [中古 AutoLang]
+```autolang{1}
 f: () throw = { // 等价于 throw std::Error
     // ...
 }
 ```
-
-```autolang{1} [上古 AutoLang]
-auto f() throw { // 等价于 throw(std::Error)
-    // ...
-}
-```
-
-:::
 
 不指定异常类型的异常说明意味着抛出 `std::Error` ，类似于 C++ 的 [`std::error_code`](https://zh.cppreference.com/w/cpp/error/error_code)。
 
