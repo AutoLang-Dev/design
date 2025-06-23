@@ -185,7 +185,7 @@ implement Tag {
 思来想去还是觉得合并式成员函数有其价值，所以加上：
 
 ```autolang
-OneInt: type {
+OneInt: type = {
     x: Int,
     to_str: (this &me) = std::format("OneInt({})", me.x);
     is Formattable {
