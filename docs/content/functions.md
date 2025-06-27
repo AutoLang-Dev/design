@@ -54,12 +54,96 @@ relu: <T> (x: T) = {
     }
     x
 }
+
+g: (x) = x;
 ```
 
 如果函数体仅有一个表达式，则可以省去花括号，这被称作函数简写：
 
 ```autolang
 relu: <T> (x) = std::max(T(), x);
+```
+
+如果不提供函数名，则相当于一个 lambda 表达式或匿名函数：
+
+```autolang
+std::ranges::sort(arr, :(lhs: &const std::String, rhs: &const std::String) = {
+    lhs + rhs < rhs + lhs
+})
+```
+
+以下展示了函数语法如何在逐渐省略成分的过程中体现出通用性：
+
+```autolang
+equal: <T: type, U: type> (x: T, y: U) -> Bool = { return x == y; }
+equal: <T, U> (x: T, y: U) -> Bool = { return x == y; }
+equal: <T, U> (x: T, y: U) -> _ = { return x == y; }
+equal: (x: _, y: _) -> _ = { return x == y; }
+equal: (x: _, y: _) = { return x == y; }
+equal: (x, y) = { return x == y; }
+equal: (x, y) = { x == y }
+equal: (x, y) = x == y;
+:(x, y) = x == y
+```
+
+重新注意一下
+
+```autolang
+:(para: T = init) = { /*...*/ }
+:(para: T = init) = statements;
+```
+
+这两种形态，换一个省略的方向，我们得到了
+
+```autolang
+(x: T = init) { /*...*/ }
+(x: T = init) statements;
+```
+
+形参列表成为了捕获列表，或者是一个局部的作用域：
+
+```autolang
+(i := 0uz)
+while i < n {
+    std::println("{}", i);
+    i++;
+}
+```
+
+这如同下面的代码：
+
+```cpp
+for (auto i = 0uz; i < n; ++i) {
+    std::println("{}", i);
+}
+```
+
+```autolang
+{
+    i := 0uz;
+    while i < n {
+        std::println("{}", i);
+        ++i;
+    }
+}
+```
+
+使用捕获列表的好处就是防止名字污染、最小化生命周期，还能减少缩进层数。注意到，我更多使用“捕获列表”而非局部作用域，这是因为我们可以把捕获列表和 lambda 表达式一起使用：
+
+```autolang
+(i := 0uz) :() = { 
+    ret := i;
+    i++;
+    ret
+}
+```
+
+它如同：
+
+```cpp
+[i = 0uz] mutable {
+    return i++;
+}
 ```
 
 ## UFCS
